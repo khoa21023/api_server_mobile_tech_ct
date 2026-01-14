@@ -226,8 +226,8 @@ export const createOrderAndPay = async (req, res) => {
             orderCode: paymentCode,
             amount: thanhTien,
             description: descriptionShort,
-            cancelUrl: "https://uninked-sudie-marled.ngrok-free.dev/api/payment/cancel",
-            returnUrl: "https://uninked-sudie-marled.ngrok-free.dev/api/payment/success"
+            cancelUrl: "https://mobile-tech-ct.onrender.com/api/payment/cancel",
+            returnUrl: "https://mobile-tech-ct.onrender.com/api/payment/success"
         };
 
         const result = await payos.createPaymentLink(paymentData);
