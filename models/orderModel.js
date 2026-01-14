@@ -4,16 +4,17 @@ import db, { execute } from '../config/db.js'; // Cần import thêm { execute }
 const orderModel = {
     // 1. Lấy danh sách đơn hàng theo trạng thái (kèm tên người dùng) - Admin
     getAllOrdersByStatus: async (status) => {
-        let sql = `SELECT dh.*, nd.HoTen 
-                   FROM donhang dh 
-                   JOIN nguoidung nd ON dh.NguoiDungId = nd.Id`;
+        let sql = `SELECT dh.*, nd.HoTen, nd.Email, nd.SoDienThoai 
+                FROM donhang dh 
+                LEFT JOIN nguoidung nd ON dh.NguoiDungId = nd.Id`; 
+
         const params = [];
         if (status) {
             sql += " WHERE dh.TrangThaiDonHang = ?";
             params.push(status);
         }
         sql += " ORDER BY dh.NgayDat DESC";
-        return await execute(sql, params); // Dùng execute để code gọn hơn
+        return await execute(sql, params);
     },
 
     // 2. Lấy thông tin cơ bản của 1 đơn hàng
