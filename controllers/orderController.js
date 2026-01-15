@@ -143,10 +143,11 @@ export const cancelMyOrder = async (req, res) => {
 // Đặt hàng và thanh toán
 export const createOrderAndPay = async (req, res) => {
     const userId = req.user.id; 
-    const { fullName, phone, address } = req.body;
+    // Thêm PhuongThucThanhToan để biết là COD hay VISA
+    const { TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, PhuongThucThanhToan } = req.body;
 
     try {
-        console.log("Bắt đầu tạo đơn cho User ID:", userId);
+        console.log("Bắt đầu tạo đơn cho:", TenNguoiNhan);
 
         // --- BƯỚC 1: LẤY CHI TIẾT GIỎ HÀNG ---
         const sqlGetCart = `
@@ -183,7 +184,7 @@ export const createOrderAndPay = async (req, res) => {
         `;
         
         await db.query(sqlInsertOrder, [
-            orderIdStr, userId, fullName, phone, address, 
+            orderIdStr, userId, TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, 
             tongTienHang, phiShip, giamGia, thanhTien
         ]);
 
@@ -192,18 +193,11 @@ export const createOrderAndPay = async (req, res) => {
             INSERT INTO chitietdonhang (Id, DonHangId, SanPhamId, TenSanPham, SoLuong, GiaLucMua, ThanhTien) 
             VALUES ?
         `;
-        
         const baseTime = Date.now();
         const detailValues = cartItems.map((item, i) => [
-            `CT${baseTime}${i}`,
-            orderIdStr,              
-            item.SanPhamId,
-            item.TenSanPham,
-            item.SoLuong,            
-            item.GiaBan,
-            item.GiaBan * item.SoLuong
+            `CT${baseTime}${i}`, orderIdStr, item.SanPhamId, item.TenSanPham,
+            item.SoLuong, item.GiaBan, item.GiaBan * item.SoLuong
         ]);
-
         await db.query(sqlInsertDetail, [detailValues]);
 
         // --- BƯỚC 4: LƯU GIAO DỊCH ---
@@ -211,17 +205,24 @@ export const createOrderAndPay = async (req, res) => {
         const paymentId = `TT${paymentCode}`; 
 
         const sqlInsertPayment = `
-            INSERT INTO thanhtoan (Id, DonHangId, MaGiaoDich, SoTienThanhToan, TrangThai, NgayThanhToan)
-            VALUES (?, ?, ?, ?, 'Pending', NOW())
+            INSERT INTO thanhtoan (Id, DonHangId, PhuongThuc, MaGiaoDich, SoTienThanhToan, TrangThai, NgayThanhToan)
+            VALUES (?, ?, ?, ?, ?, 'Pending', NOW())
         `;
-        await db.query(sqlInsertPayment, [paymentId, orderIdStr, paymentCode, thanhTien]);
+        await db.query(sqlInsertPayment, [paymentId, orderIdStr, PhuongThucThanhToan, paymentCode, thanhTien]);
 
         // --- BƯỚC 5: XÓA GIỎ HÀNG ---
         await db.query("DELETE FROM giohang WHERE NguoiDungId = ?", [userId]);
+        
+        // Nếu là COD (Thanh toán khi nhận hàng) -> Trả về thành công luôn, không gọi PayOS
+        if (PhuongThucThanhToan === 'cod') {
+            return res.json({ 
+                error: false, 
+                message: "Đặt hàng thành công (COD)", 
+                orderId: orderIdStr 
+            });
+        }
 
-        // --- BƯỚC 6: GỌI PAYOS ---
         const descriptionShort = `TT ${orderIdStr}`; 
-
         const paymentData = {
             orderCode: paymentCode,
             amount: thanhTien,
@@ -231,8 +232,7 @@ export const createOrderAndPay = async (req, res) => {
         };
 
         const result = await payos.createPaymentLink(paymentData);
-
-        res.json({ error: false, message: "Thành công", checkoutUrl: result.checkoutUrl });
+        res.json({ error: false, message: "Tạo link thanh toán thành công", checkoutUrl: result.checkoutUrl });
 
     } catch (error) {
         console.error("Lỗi chi tiết:", error);
