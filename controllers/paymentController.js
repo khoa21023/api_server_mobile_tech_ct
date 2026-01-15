@@ -56,13 +56,50 @@ export const handleWebhook = async (req, res) => {
 
 // 2. TRANG BÁO THÀNH CÔNG
 export const paymentSuccess = (req, res) => {
+    const packageName = "com.example.mobile_tech_ct"; 
+    const scheme = "mobiletech";
+    const path = "payment/success";
+    const androidIntent = `intent://${path}#Intent;scheme=${scheme};package=${packageName};end`;
+    const iosLink = `${scheme}://${path}`;
+
     res.send(`
         <html>
-            <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-            <body style="text-align:center; padding-top:50px;">
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+                    .btn {
+                        display: inline-block;
+                        background-color: #2563EB;
+                        color: white;
+                        padding: 12px 24px;
+                        text-decoration: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        margin-top: 20px;
+                    }
+                </style>
+            </head>
+            <body>
                 <h1 style="color:green">Thanh toán thành công!</h1>
+                <p>Đang chuyển hướng về ứng dụng...</p>
+                
+                <a id="btn-app" href="${iosLink}" class="btn">Quay về ứng dụng ngay</a>
+
                 <script>
-                    setTimeout(() => { window.location.href = "mobiletech://payment/success"; }, 1000);
+                    // Phát hiện hệ điều hành
+                    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                    var isAndroid = /android/i.test(userAgent);
+
+                    var url = isAndroid ? "${androidIntent}" : "${iosLink}";
+                    
+                    // Cập nhật link cho nút bấm
+                    document.getElementById('btn-app').href = url;
+
+                    // Thử tự động chuyển hướng
+                    setTimeout(function() {
+                        window.location.replace(url);
+                    }, 1000);
                 </script>
             </body>
         </html>
