@@ -27,7 +27,7 @@ const favoriteModel = {
     // 4. Xóa
     delete: async (userId, productId) => {
         const sql = "DELETE FROM yeuthich WHERE NguoiDungId = ? AND SanPhamId = ?";
-        return await execute(sql, [userId, productId]);
+        return await execute(sql, [userId, productId.toString()]); 
     }
 };
 
