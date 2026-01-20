@@ -5,6 +5,7 @@ import { createRequire } from 'module';
 
 dotenv.config();
 
+
 const require = createRequire(import.meta.url);
 const multerStorageCloudinary = require('multer-storage-cloudinary');
 const CloudinaryStorage = multerStorageCloudinary.CloudinaryStorage || 
@@ -18,7 +19,7 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary: { v2: cloudinary }, 
   params: {
     folder: 'mobile_tech_avatars',
     allowed_formats: ['jpg', 'png', 'jpeg'],
