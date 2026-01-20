@@ -144,7 +144,7 @@ export const cancelMyOrder = async (req, res) => {
 export const createOrderAndPay = async (req, res) => {
     const userId = req.user.id; 
     // Thêm PhuongThucThanhToan để biết là COD hay VISA
-    const { TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, PhuongThucThanhToan } = req.body;
+    const { TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, PhuongThucThanhToan, MaKhuyenMai } = req.body;
 
     try {
         console.log("Bắt đầu tạo đơn cho:", TenNguoiNhan);
@@ -168,8 +168,33 @@ export const createOrderAndPay = async (req, res) => {
             tongTienHang += Number(item.GiaBan) * item.SoLuong;
         }
         const phiShip = 30000; 
-        const giamGia = 0;     
+        
+        // ---  TÍNH GIẢM GIÁ (MỚI) ---
+        let giamGia = 0;
+        let maKM = null;
+
+        if (MaKhuyenMai) {
+            // Tìm mã khuyến mãi trong DB
+            const [promos] = await db.query("SELECT * FROM khuyenmai WHERE MaCode = ?", [MaKhuyenMai]);
+            
+            if (promos.length > 0) {
+                const promo = promos[0];
+                const now = new Date();
+                
+                // Kiểm tra hạn sử dụng và đơn tối thiểu
+                const validDate = now >= new Date(promo.NgayBatDau) && now <= new Date(promo.NgayKetThuc);
+                const validValue = tongTienHang >= promo.DonToiThieu;
+
+                if (validDate && validValue) {
+                    giamGia = Number(promo.SoTienGiam);
+                    maLuuVaoDb = MaKhuyenMai;
+                    console.log(`Áp dụng mã ${MaKhuyenMai}: Giảm ${giamGia}`);
+                }
+            }
+        }
+            
         const thanhTien = tongTienHang + phiShip - giamGia;
+        if (thanhTien < 0) thanhTien = 0;
 
         // --- BƯỚC 2: TẠO ĐƠN HÀNG ---
         const orderIdStr = `DH${Date.now()}`; 
@@ -177,15 +202,15 @@ export const createOrderAndPay = async (req, res) => {
         const sqlInsertOrder = `
             INSERT INTO donhang (
                 Id, NguoiDungId, TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, 
-                TongTienHang, PhiShip, GiamGia, ThanhTien, 
+                TongTienHang, PhiShip, GiamGia, ThanhTien, MaKhuyenMai,
                 TrangThaiDonHang, TrangThaiThanhToan, NgayDat
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Chờ xác nhận', 'Chưa thanh toán', NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Chờ xác nhận', 'Chưa thanh toán', NOW())
         `;
         
         await db.query(sqlInsertOrder, [
             orderIdStr, userId, TenNguoiNhan, SdtNguoiNhan, DiaChiGiao, 
-            tongTienHang, phiShip, giamGia, thanhTien
+            tongTienHang, phiShip, giamGia, thanhTien, maKM
         ]);
 
         // --- BƯỚC 3: LƯU CHI TIẾT ĐƠN HÀNG ---
