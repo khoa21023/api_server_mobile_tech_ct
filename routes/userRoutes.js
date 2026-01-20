@@ -1,5 +1,5 @@
 import express from 'express';
-import uploadCloud from '../config/upload.js';
+import upload from '../config/upload.js';
 import { login, register, logout, getProfile,updateProfile, uploadAvatar, changePassword, resetPassword } from '../controllers/userController.js';
 import { verifyToken,isCustomer,isAdmin } from '../middleware/auth.js';
 const router = express.Router();
@@ -9,14 +9,13 @@ const handleUpload = (req, res, next) => {
     
     uploadFunc(req, res, (err) => {
         if (err) {
-            console.error("LỖI UPLOAD MULTER:", err); // Hiện log trên Render để check
-            // Trả về JSON lỗi để App hiện thông báo thay vì "Unexpected end of input"
+            console.error("LỖI UPLOAD MULTER:", err); 
             return res.status(400).json({ 
                 success: false, 
                 message: "Lỗi Upload Ảnh: " + (err.message || err) 
             });
         }
-        next(); // Nếu không lỗi thì đi tiếp sang controller uploadAvatar
+        next();
     });
 };
 
