@@ -1,5 +1,5 @@
 import express from 'express';
-import uploadCloud from '../config/uploadCloud.js';
+import uploadCloud from '../config/upload.js';
 import { login, register, logout, getProfile,updateProfile, uploadAvatar, changePassword, resetPassword } from '../controllers/userController.js';
 import { verifyToken,isCustomer,isAdmin } from '../middleware/auth.js';
 const router = express.Router();
