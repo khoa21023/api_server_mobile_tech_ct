@@ -1,19 +1,47 @@
 import { cartModel } from '../models/cartModel.js';
+import db from '../config/db.js';
 
 export const addToCart = async (req, res) => {
     try {
         const { productId, quantity } = req.body;
         const userId = req.user.id;
 
-        const existing = await cartModel.findItemInCart(userId, productId);
+        // --- 1. LẤY THÔNG TIN TỒN KHO CỦA SẢN PHẨM ---
+        const [products] = await db.query("SELECT TonKho, TenSanPham FROM sanpham WHERE Id = ?", [productId]);
+        
+        if (products.length === 0) {
+            return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại" });
+        }
+        const product = products[0];
 
+        // --- 2. LẤY SỐ LƯỢNG ĐANG CÓ TRONG GIỎ ---
+        const existing = await cartModel.findItemInCart(userId, productId);
+        let currentQtyInCart = 0;
+        
+        if (existing.length > 0) {
+            currentQtyInCart = existing[0].SoLuong;
+        }
+
+        // --- 3. KIỂM TRA TỒN KHO ---
+        const totalQty = currentQtyInCart + quantity;
+
+        if (totalQty > product.TonKho) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Kho chỉ còn ${product.TonKho} món. Trong giỏ bạn đã có ${currentQtyInCart} món rồi.` 
+            });
+        }
+
+        // --- 4. NẾU ĐỦ HÀNG THÌ MỚI CHO THÊM ---
         if (existing.length > 0) {
             await cartModel.increaseQuantity(userId, productId, quantity);
         } else {
             const cartId = 'GH' + Date.now();
             await cartModel.addToCart(cartId, userId, productId, quantity);
         }
+        
         return res.json({ success: true, message: "Đã thêm vào giỏ hàng" });
+
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
