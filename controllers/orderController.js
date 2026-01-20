@@ -180,7 +180,7 @@ export const createOrderAndPay = async (req, res) => {
                 TongTienHang, PhiShip, GiamGia, ThanhTien, 
                 TrangThaiDonHang, TrangThaiThanhToan, NgayDat
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ChoXacNhan', 'Chưa thanh toán', NOW())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Chờ xác nhận', 'Chưa thanh toán', NOW())
         `;
         
         await db.query(sqlInsertOrder, [
@@ -206,7 +206,7 @@ export const createOrderAndPay = async (req, res) => {
 
         const sqlInsertPayment = `
             INSERT INTO thanhtoan (Id, DonHangId, PhuongThuc, MaGiaoDich, SoTienThanhToan, TrangThai, NgayThanhToan)
-            VALUES (?, ?, ?, ?, ?, 'Pending', NOW())
+            VALUES (?, ?, ?, ?, ?, 'Đang xử lý', NOW())
         `;
         await db.query(sqlInsertPayment, [paymentId, orderIdStr, PhuongThucThanhToan, paymentCode, thanhTien]);
 

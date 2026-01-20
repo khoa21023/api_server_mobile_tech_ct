@@ -33,7 +33,7 @@ export const handleWebhook = async (req, res) => {
 
             // Cập nhật bảng thanhtoan
             await db.query(
-                "UPDATE thanhtoan SET TrangThai = 'ThanhCong' WHERE MaGiaoDich = ?", 
+                "UPDATE thanhtoan SET TrangThai = 'Thành công' WHERE MaGiaoDich = ?", 
                 [paymentCode]
             );
 
