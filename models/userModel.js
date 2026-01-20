@@ -52,7 +52,7 @@ export const userModel = {
 
     // 8. Cập nhật ảnh đại diện (Lưu ý: Cột trong SQL của cậu là HinhAnh)
     updateAvatar: async (userId, fileName) => {
-        const sql = "UPDATE nguoidung SET HinhAnh = ? WHERE Id = ?";
+        const sql = "UPDATE nguoidung SET AnhDaiDien = ? WHERE Id = ?";
         return await execute(sql, [fileName, userId]);
     },
 

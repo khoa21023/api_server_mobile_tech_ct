@@ -113,13 +113,13 @@ export const uploadAvatar = async (req, res) => {
             return res.status(400).json({ success: false, message: "Vui lòng chọn ảnh (Key: avatar)" });
         }
 
-        const fileName = req.file.filename;
-        await userModel.updateAvatar(userId, fileName); // Cập nhật DB
+        const avatarUrl = req.file.path; 
+        await userModel.updateAvatar(userId, avatarUrl);
 
         res.json({ 
             success: true, 
             message: "Cập nhật ảnh thành công", 
-            fileName: fileName 
+            avatarUrl: avatarUrl
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

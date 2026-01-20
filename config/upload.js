@@ -1,16 +1,25 @@
-// config/upload.js
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
-import path from 'path';
+import dotenv from 'dotenv';
 
-const storage = multer.diskStorage({
-    destination: (_, __, cb) => { // Dùng dấu gạch dưới cho biến không dùng
-        cb(null, 'uploads/avatar/'); // Sửa đường dẫn để vào đúng thư mục avatar cậu đã tạo
-    },
-    filename: (_, file, cb) => {
-        cb(null, 'avatar-' + Date.now() + path.extname(file.originalname));
-    }
+dotenv.config();
+
+// Cấu hình tài khoản Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
 });
 
-const upload = multer({ storage: storage });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'mobile_tech_ct_avatars',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+  },
+});
 
-export default upload; // <--- Cậu phải có dòng này
+const uploadCloud = multer({ storage });
+
+export default uploadCloud;
