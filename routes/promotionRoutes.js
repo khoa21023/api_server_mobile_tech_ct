@@ -11,5 +11,5 @@ router.get('/', verifyToken, getPromotions);
 router.post('/add', verifyToken, isAdmin, addPromotion);
 router.put('/update/:id', verifyToken, isAdmin, updatePromotion);
 router.delete('/remove/:id', verifyToken, isAdmin, deletePromotion);
-router.get('/', verifyToken, isAdmin, getPromotions);
+
 export default router;
