@@ -60,7 +60,13 @@ export const userModel = {
     getUserById: async (userId) => {
         const sql = "SELECT Id, Email, HoTen, SoDienThoai, DiaChi, VaiTro, AnhDaiDien FROM nguoidung WHERE Id = ?";
         const rows = await execute(sql, [userId]);
-        return rows[0];
+        if (rows[0]) {
+            return {
+                ...rows[0],
+                avatarUrl: rows[0].AnhDaiDien 
+            };
+        }
+        return null;
     },
 
     // 10. Quản lý Token (Để không lỗi auth.js)

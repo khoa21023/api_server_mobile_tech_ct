@@ -113,7 +113,10 @@ export const uploadAvatar = async (req, res) => {
             return res.status(400).json({ success: false, message: "Vui lòng chọn ảnh (Key: avatar)" });
         }
 
-        const avatarUrl = req.file.path; 
+        const avatarUrl = req.file.path || req.file.secure_url;
+        if (!avatarUrl) {
+            return res.status(500).json({ success: false, message: "Lỗi: Không lấy được link ảnh từ Cloudinary." });
+        }
         await userModel.updateAvatar(userId, avatarUrl);
 
         res.json({ 
