@@ -225,6 +225,12 @@ export const createOrderAndPay = async (req, res) => {
         ]);
         await db.query(sqlInsertDetail, [detailValues]);
 
+        // --- CẬP NHẬT TRỪ KHO ---
+        for (const item of cartItems) {
+            const sqlUpdateStock = `UPDATE sanpham SET TonKho = TonKho - ? WHERE Id = ?`;
+            await db.query(sqlUpdateStock, [item.SoLuong, item.SanPhamId]);
+        }
+
         // --- BƯỚC 4: LƯU GIAO DỊCH ---
         const paymentCode = Date.now(); 
         const paymentId = `TT${paymentCode}`; 
