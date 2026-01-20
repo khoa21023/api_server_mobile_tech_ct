@@ -1,9 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import bodyParser from 'body-parser';
-import fileUpload from 'express-fileupload';
-import fs from 'fs';
 
 // --- IMPORT CÁC ROUTES ---
 import productRoutes from './routes/productRoutes.js';
@@ -20,15 +17,9 @@ const PORT = process.env.PORT || 3000;
 
 // --- MIDDLEWARE ---
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(fileUpload());
 
-// Tạo thư mục uploads nếu chưa có
-if (!fs.existsSync('./uploads')) {
-    fs.mkdirSync('./uploads');
-}
-app.use('/uploads', express.static('uploads'));
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 // --- ĐỊNH NGHĨA ROUTES ---
 app.use('/api/products', productRoutes);
@@ -38,11 +29,14 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/payment', paymentRoutes);
-// Route kiểm tra server
+
 app.get('/', (req, res) => {
     res.send('Server Mobile Tech đang chạy...');
 });
 
-app.listen(PORT, () => {
-    console.log(` Server is running on: http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+    console.log(`Server is running on: http://localhost:${PORT}`);
 });
+
+server.keepAliveTimeout = 120 * 1000;
+server.headersTimeout = 120 * 1000;
