@@ -151,7 +151,7 @@ export const createOrderAndPay = async (req, res) => {
 
         // --- BƯỚC 1: LẤY CHI TIẾT GIỎ HÀNG ---
         const sqlGetCart = `
-            SELECT gh.SanPhamId, gh.SoLuong, sp.GiaBan, sp.TenSanPham, sp.HinhAnh 
+            SELECT gh.SanPhamId, gh.SoLuong, sp.GiaBan, sp.TenSanPham, sp.HinhAnh, sp.TonKho
             FROM giohang gh 
             JOIN sanpham sp ON gh.SanPhamId = sp.Id 
             WHERE gh.NguoiDungId = ?
@@ -160,6 +160,15 @@ export const createOrderAndPay = async (req, res) => {
 
         if (cartItems.length === 0) {
             return res.status(400).json({ message: "Giỏ hàng trống" });
+        }
+        
+        for (const item of cartItems) {
+            if (item.SoLuong > item.TonKho) {
+                return res.status(400).json({ 
+                    error: true, 
+                    message: `Sản phẩm "${item.TenSanPham}" chỉ còn ${item.TonKho} cái, không đủ để bán.` 
+                });
+            }
         }
 
         // --- TÍNH TOÁN TIỀN ---
