@@ -1,24 +1,28 @@
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import dotenv from 'dotenv';
-
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 dotenv.config();
 
-// Cấu hình tài khoản Cloudinary
+const require = createRequire(import.meta.url);
+const multerStorageCloudinary = require('multer-storage-cloudinary');
+const CloudinaryStorage = multerStorageCloudinary.CloudinaryStorage || 
+                          multerStorageCloudinary.default || 
+                          multerStorageCloudinary;
+
+// Cấu hình Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
+// Tạo storage
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'mobile_tech_ct_avatars',
+    folder: 'mobile_tech_avatars',
     allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });
