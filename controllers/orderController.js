@@ -196,7 +196,7 @@ export const createOrderAndPay = async (req, res) => {
 
                 if (validDate && validValue) {
                     giamGia = Number(promo.SoTienGiam);
-                    maLuuVaoDb = MaKhuyenMai;
+                    maKM = MaKhuyenMai;
                     console.log(`Áp dụng mã ${MaKhuyenMai}: Giảm ${giamGia}`);
                 }
             }
